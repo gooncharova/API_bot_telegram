@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 
@@ -14,16 +15,23 @@ CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 url = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
 
+logging.basicConfig(filename='bot_logger.log')
+logger = logging.getLogger(__name__)
+
 
 def parse_homework_status(homework):
     homework_name = homework['homework_name']
-    if homework['status'] is None:
-        return 'Что-то пошло не так. Нужно проверить что.'
+    if homework['status'] is None or homework_name is None:
+        logger.error('Отсутствует статус или имя домашки.')
+        return 'Отсутствует статус или имя домашки. Нужно проверить.'
     if homework['status'] == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
-    else:
+    elif homework['status'] == 'approved':
         verdict = 'Ревьюеру всё понравилось, можно приступать к следующему '\
             'уроку.'
+    else:
+        logger.error('Неизвестный статус.')
+        return 'Неизвестный статус. Нужно проверить.'
     return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
@@ -34,7 +42,20 @@ def get_homework_statuses(current_timestamp):
     params = {
         'from_date': current_timestamp
     }
-    homework_statuses = requests.get(url, headers=headers, params=params)
+    try:
+        homework_statuses = requests.get(url, headers=headers, params=params)
+    except requests.exceptions.HTTPError as errh:
+        return('Ошибка Http:', errh)
+        logger.error('Ошибка Http:', errh)
+    except requests.exceptions.ConnectionError as errc:
+        return('Соединение не установлено:', errc)
+        logger.error('Соединение не установлено:', errc)
+    except requests.exceptions.Timeout as errt:
+        return('Ошибка тайм-аута:', errt)
+        logger.error('Ошибка тайм-аута:', errt)
+    except requests.exceptions.RequestException as err:
+        return('Случилось что-то еще:', err)
+        logger.error('Случилось что-то еще:', err)
     return homework_statuses.json()
 
 
