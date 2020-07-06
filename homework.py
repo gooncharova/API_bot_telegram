@@ -20,13 +20,13 @@ logger = logging.getLogger(__name__)
 
 
 def parse_homework_status(homework):
-    homework_name = homework['homework_name']
-    if homework['status'] is None or homework_name is None:
+    homework_name = homework.get('homework_name')
+    if homework.get('status') is None or homework_name is None:
         logger.error('Отсутствует статус или имя домашки.')
         return 'Отсутствует статус или имя домашки. Нужно проверить.'
-    if homework['status'] == 'rejected':
+    if homework.get('status') == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
-    elif homework['status'] == 'approved':
+    elif homework.get('status') == 'approved':
         verdict = 'Ревьюеру всё понравилось, можно приступать к следующему '\
             'уроку.'
     else:
