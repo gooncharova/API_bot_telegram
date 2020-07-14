@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
+    r_comment = homework.get('reviewer_comment')
     if homework_status is None or homework_name is None:
         logger.error('Отсутствует статус или имя домашки.')
         return 'Отсутствует статус или имя домашки. Нужно проверить.'
@@ -33,7 +34,8 @@ def parse_homework_status(homework):
     else:
         logger.error('Неизвестный статус.')
         return 'Неизвестный статус. Нужно проверить.'
-    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}. '\
+        f'\n\nКомментарий: {r_comment}'
 
 
 def get_homework_statuses(current_timestamp):
